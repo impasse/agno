@@ -305,6 +305,16 @@ def _create_events_from_chunk(
             )
             events_to_emit.append(args_event)  # type: ignore
 
+    # Handle tool call arguments delta (incremental updates)
+    elif chunk.event == RunEvent.tool_call_args_delta or chunk.event == TeamRunEvent.tool_call_args_delta:
+        if chunk.tool_call_id is not None:  # type: ignore
+            args_delta_event = ToolCallArgsEvent(
+                type=EventType.TOOL_CALL_ARGS,
+                tool_call_id=chunk.tool_call_id,  # type: ignore
+                delta=chunk.delta or "",  # type: ignore
+            )
+            events_to_emit.append(args_delta_event)
+
     # Handle tool call completion
     elif chunk.event == RunEvent.tool_call_completed or chunk.event == TeamRunEvent.tool_call_completed:
         if chunk.tool is not None:  # type: ignore

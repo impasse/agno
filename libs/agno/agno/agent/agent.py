@@ -141,6 +141,8 @@ from agno.utils.events import (
     create_run_started_event,
     create_session_summary_completed_event,
     create_session_summary_started_event,
+    create_tool_call_args_completed_event,
+    create_tool_call_args_delta_event,
     create_tool_call_completed_event,
     create_tool_call_error_event,
     create_tool_call_started_event,
@@ -1455,7 +1457,7 @@ class Agent:
                     )
 
                     # Start the Run by yielding a RunStarted event
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_started_event(run_response),
                             run_response,
@@ -1505,7 +1507,7 @@ class Agent:
                         ):
                             raise_if_cancelled(run_response.run_id)  # type: ignore
                             if isinstance(event, RunContentEvent):
-                                if stream_events:
+                                if stream_events is not None:
                                     yield IntermediateRunContentEvent(
                                         content=event.content,
                                         content_type=event.content_type,
@@ -1550,7 +1552,7 @@ class Agent:
                         return
 
                     # Yield RunContentCompletedEvent
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_content_completed_event(from_run_response=run_response),
                             run_response,
@@ -1586,7 +1588,7 @@ class Agent:
                         # Upsert the RunOutput to Agent Session before creating the session summary
                         session.upsert_run(run=run_response)
 
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_started_event(from_run_response=run_response),
                                 run_response,
@@ -1597,7 +1599,7 @@ class Agent:
                             self.session_summary_manager.create_session_summary(session=session)
                         except Exception as e:
                             log_warning(f"Error in session summary creation: {str(e)}")
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_completed_event(
                                     from_run_response=run_response, session_summary=session.summary
@@ -1628,7 +1630,7 @@ class Agent:
                         run_response=run_response, session=session, run_context=run_context, user_id=user_id
                     )
 
-                    if stream_events:
+                    if stream_events is not None:
                         yield completed_event  # type: ignore
 
                     if yield_run_output:
@@ -2425,7 +2427,7 @@ class Agent:
 
                 try:
                     # Start the Run by yielding a RunStarted event
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_started_event(run_response),
                             run_response,
@@ -2574,7 +2576,7 @@ class Agent:
                         ):
                             await araise_if_cancelled(run_response.run_id)  # type: ignore
                             if isinstance(event, RunContentEvent):
-                                if stream_events:
+                                if stream_events is not None:
                                     yield IntermediateRunContentEvent(
                                         content=event.content,
                                         content_type=event.content_type,
@@ -2604,7 +2606,7 @@ class Agent:
                     ):
                         yield event  # type: ignore
 
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_content_completed_event(from_run_response=run_response),
                             run_response,
@@ -2661,7 +2663,7 @@ class Agent:
                         # Upsert the RunOutput to Agent Session before creating the session summary
                         agent_session.upsert_run(run=run_response)
 
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_started_event(from_run_response=run_response),
                                 run_response,
@@ -2672,7 +2674,7 @@ class Agent:
                             await self.session_summary_manager.acreate_session_summary(session=agent_session)
                         except Exception as e:
                             log_warning(f"Error in session summary creation: {str(e)}")
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_completed_event(
                                     from_run_response=run_response, session_summary=agent_session.summary
@@ -2706,7 +2708,7 @@ class Agent:
                         user_id=user_id,
                     )
 
-                    if stream_events:
+                    if stream_events is not None:
                         yield completed_event  # type: ignore
 
                     if yield_run_output:
@@ -3593,7 +3595,7 @@ class Agent:
                         self._resolve_run_dependencies(run_context=run_context)
 
                     # Start the Run by yielding a RunContinued event
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_continued_event(run_response),
                             run_response,
@@ -3625,7 +3627,7 @@ class Agent:
                     )
 
                     # Yield RunContentCompletedEvent
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_content_completed_event(from_run_response=run_response),
                             run_response,
@@ -3662,7 +3664,7 @@ class Agent:
                         # Upsert the RunOutput to Agent Session before creating the session summary
                         session.upsert_run(run=run_response)
 
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_started_event(from_run_response=run_response),
                                 run_response,
@@ -3674,7 +3676,7 @@ class Agent:
                         except Exception as e:
                             log_warning(f"Error in session summary creation: {str(e)}")
 
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_completed_event(
                                     from_run_response=run_response, session_summary=session.summary
@@ -3705,7 +3707,7 @@ class Agent:
                         run_response=run_response, session=session, run_context=run_context, user_id=user_id
                     )
 
-                    if stream_events:
+                    if stream_events is not None:
                         yield completed_event  # type: ignore
 
                     if yield_run_output:
@@ -4440,7 +4442,7 @@ class Agent:
                     register_run(run_response.run_id)  # type: ignore
 
                     # Start the Run by yielding a RunContinued event
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_continued_event(run_response),
                             run_response,
@@ -4485,7 +4487,7 @@ class Agent:
                         ):
                             raise_if_cancelled(run_response.run_id)  # type: ignore
                             if isinstance(event, RunContentEvent):
-                                if stream_events:
+                                if stream_events is not None:
                                     yield IntermediateRunContentEvent(
                                         content=event.content,
                                         content_type=event.content_type,
@@ -4516,7 +4518,7 @@ class Agent:
                         yield event  # type: ignore
 
                     # Yield RunContentCompletedEvent
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_run_content_completed_event(from_run_response=run_response),
                             run_response,
@@ -4555,7 +4557,7 @@ class Agent:
                         # Upsert the RunOutput to Agent Session before creating the session summary
                         agent_session.upsert_run(run=run_response)
 
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_started_event(from_run_response=run_response),
                                 run_response,
@@ -4566,7 +4568,7 @@ class Agent:
                             await self.session_summary_manager.acreate_session_summary(session=agent_session)
                         except Exception as e:
                             log_warning(f"Error in session summary creation: {str(e)}")
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_session_summary_completed_event(
                                     from_run_response=run_response, session_summary=agent_session.summary
@@ -4597,7 +4599,7 @@ class Agent:
                         run_response=run_response, session=agent_session, run_context=run_context, user_id=user_id
                     )
 
-                    if stream_events:
+                    if stream_events is not None:
                         yield completed_event  # type: ignore
 
                     if yield_run_output:
@@ -4778,7 +4780,7 @@ class Agent:
                 background_tasks.add_task(hook, **filtered_args)
                 continue
 
-            if stream_events:
+            if stream_events is not None:
                 yield handle_event(  # type: ignore
                     run_response=run_response,
                     event=create_pre_hook_started_event(
@@ -4795,7 +4797,7 @@ class Agent:
 
                 hook(**filtered_args)
 
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(  # type: ignore
                         run_response=run_response,
                         event=create_pre_hook_completed_event(
@@ -4873,7 +4875,7 @@ class Agent:
                 background_tasks.add_task(hook, **filtered_args)
                 continue
 
-            if stream_events:
+            if stream_events is not None:
                 yield handle_event(  # type: ignore
                     run_response=run_response,
                     event=create_pre_hook_started_event(
@@ -4894,7 +4896,7 @@ class Agent:
                     # Synchronous function
                     hook(**filtered_args)
 
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(  # type: ignore
                         run_response=run_response,
                         event=create_pre_hook_completed_event(
@@ -4971,7 +4973,7 @@ class Agent:
                 background_tasks.add_task(hook, **filtered_args)
                 continue
 
-            if stream_events:
+            if stream_events is not None:
                 yield handle_event(  # type: ignore
                     run_response=run_output,
                     event=create_post_hook_started_event(
@@ -4987,7 +4989,7 @@ class Agent:
 
                 hook(**filtered_args)
 
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(  # type: ignore
                         run_response=run_output,
                         event=create_post_hook_completed_event(
@@ -5057,7 +5059,7 @@ class Agent:
                 background_tasks.add_task(hook, **filtered_args)
                 continue
 
-            if stream_events:
+            if stream_events is not None:
                 yield handle_event(  # type: ignore
                     run_response=run_output,
                     event=create_post_hook_started_event(
@@ -5077,7 +5079,7 @@ class Agent:
                 else:
                     hook(**filtered_args)
 
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(  # type: ignore
                         run_response=run_output,
                         event=create_post_hook_completed_event(
@@ -5303,9 +5305,27 @@ class Agent:
         ):
             if isinstance(call_result, ModelResponse):
                 if call_result.event == ModelResponseEvent.tool_call_started.value:
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_tool_call_started_event(from_run_response=run_response, tool=tool),
+                            run_response,
+                            events_to_skip=self.events_to_skip,  # type: ignore
+                            store_events=self.store_events,
+                        )
+
+                if (
+                    call_result.event == ModelResponseEvent.tool_call_args_delta.value
+                    and call_result.tool_call_args_delta
+                ):
+                    if stream_events is not None:
+                        delta_data = call_result.tool_call_args_delta
+                        yield handle_event(  # type: ignore
+                            create_tool_call_args_delta_event(
+                                from_run_response=run_response,
+                                tool_call_id=delta_data.get("id") or tool.tool_call_id or "",
+                                tool_call_name=delta_data.get("name") or tool.tool_name or "",
+                                delta=delta_data.get("arguments") or "",
+                            ),
                             run_response,
                             events_to_skip=self.events_to_skip,  # type: ignore
                             store_events=self.store_events,
@@ -5315,7 +5335,7 @@ class Agent:
                     tool_execution = call_result.tool_executions[0]
                     tool.result = tool_execution.result
                     tool.tool_call_error = tool_execution.tool_call_error
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_tool_call_completed_event(
                                 from_run_response=run_response, tool=tool, content=call_result.content
@@ -5370,18 +5390,37 @@ class Agent:
         ):
             if isinstance(call_result, ModelResponse):
                 if call_result.event == ModelResponseEvent.tool_call_started.value:
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_tool_call_started_event(from_run_response=run_response, tool=tool),
                             run_response,
                             events_to_skip=self.events_to_skip,  # type: ignore
                             store_events=self.store_events,
                         )
+
+                if (
+                    call_result.event == ModelResponseEvent.tool_call_args_delta.value
+                    and call_result.tool_call_args_delta
+                ):
+                    if stream_events is not None:
+                        delta_data = call_result.tool_call_args_delta
+                        yield handle_event(  # type: ignore
+                            create_tool_call_args_delta_event(
+                                from_run_response=run_response,
+                                tool_call_id=delta_data.get("id") or tool.tool_call_id or "",
+                                tool_call_name=delta_data.get("name") or tool.tool_name or "",
+                                delta=delta_data.get("arguments") or "",
+                            ),
+                            run_response,
+                            events_to_skip=self.events_to_skip,  # type: ignore
+                            store_events=self.store_events,
+                        )
+
                 if call_result.event == ModelResponseEvent.tool_call_completed.value and call_result.tool_executions:
                     tool_execution = call_result.tool_executions[0]
                     tool.result = tool_execution.result
                     tool.tool_call_error = tool_execution.tool_call_error
-                    if stream_events:
+                    if stream_events is not None:
                         yield handle_event(  # type: ignore
                             create_tool_call_completed_event(
                                 from_run_response=run_response, tool=tool, content=call_result.content
@@ -5681,6 +5720,9 @@ class Agent:
         }
         model_response = ModelResponse(content="")
 
+        # Track current tool call id and name for streaming tool call args
+        tool_call_tracker: Dict[str, Dict[str, str]] = {}
+
         # Get output_schema from run_context
         output_schema = run_context.output_schema if run_context else None
         should_parse_structured_output = output_schema is not None and self.parse_response and self.parser_model is None
@@ -5711,6 +5753,7 @@ class Agent:
                 stream_events=stream_events,
                 session_state=session_state,
                 run_context=run_context,
+                tool_call_tracker=tool_call_tracker,
             )
 
         # Determine reasoning completed
@@ -5768,6 +5811,9 @@ class Agent:
         }
         model_response = ModelResponse(content="")
 
+        # Track current tool call id and name for streaming tool call args
+        tool_call_tracker: Dict[str, Dict[str, str]] = {}
+
         # Get output_schema from run_context
         output_schema = run_context.output_schema if run_context else None
         should_parse_structured_output = output_schema is not None and self.parse_response and self.parser_model is None
@@ -5800,6 +5846,7 @@ class Agent:
                 stream_events=stream_events,
                 session_state=session_state,
                 run_context=run_context,
+                tool_call_tracker=tool_call_tracker,
             ):
                 yield event
 
@@ -5849,6 +5896,7 @@ class Agent:
         stream_events: bool = False,
         session_state: Optional[Dict[str, Any]] = None,
         run_context: Optional[RunContext] = None,
+        tool_call_tracker: Optional[Dict[str, Dict[str, str]]] = None,
     ) -> Iterator[RunOutputEvent]:
         from agno.run.workflow import WorkflowRunOutputEvent
 
@@ -6045,6 +6093,22 @@ class Agent:
                         run_response.requirements = []
                     run_response.requirements.append(RunRequirement(tool_execution=tool_executions_list[-1]))
 
+                    # Emit ToolCallArgsCompletedEvent for HITL tools (args are complete at this point)
+                    if stream_events is not None:
+                        for tool in tool_executions_list:
+                            if tool.tool_call_id and tool.tool_name and tool.tool_args:
+                                yield handle_event(  # type: ignore
+                                    create_tool_call_args_completed_event(
+                                        from_run_response=run_response,
+                                        tool_call_id=tool.tool_call_id,
+                                        tool_call_name=tool.tool_name,
+                                        tool_args=tool.tool_args,
+                                    ),
+                                    run_response,
+                                    events_to_skip=self.events_to_skip,  # type: ignore
+                                    store_events=self.store_events,
+                                )
+
             # If the model response is a tool_call_started, add the tool call to the run_response
             elif (
                 model_response_event.event == ModelResponseEvent.tool_call_started.value
@@ -6057,15 +6121,133 @@ class Agent:
                     else:
                         run_response.tools.extend(tool_executions_list)
 
-                    # Yield each tool call started event
-                    if stream_events:
+                    # Initialize tracker for tracking which tool calls have started
+                    if tool_call_tracker is None:
+                        tool_call_tracker = {}
+                    started_set = tool_call_tracker.get("_started", set())
+
+                    # Yield each tool call started event only if not already emitted via tool_call_args_delta
+                    if stream_events is not None:
                         for tool in tool_executions_list:
+                            tool_key = tool.tool_call_id or ""
+                            if tool_key and tool_key in started_set:
+                                # Already emitted via tool_call_args_delta, skip
+                                continue
                             yield handle_event(  # type: ignore
                                 create_tool_call_started_event(from_run_response=run_response, tool=tool),
                                 run_response,
                                 events_to_skip=self.events_to_skip,  # type: ignore
                                 store_events=self.store_events,
                             )
+
+            # If the model response is a tool_call_args_delta, yield the delta event
+            elif (
+                model_response_event.event == ModelResponseEvent.tool_call_args_delta.value
+                and model_response_event.tool_call_args_delta
+            ):
+                if stream_events is not None:
+                    delta_data = model_response_event.tool_call_args_delta
+                    tool_call_id = delta_data.get("id") or ""
+                    tool_call_name = delta_data.get("name") or ""
+                    delta = delta_data.get("arguments") or ""
+
+                    # Initialize tracker if needed
+                    if tool_call_tracker is None:
+                        tool_call_tracker = {}
+
+                    # Update tracker with id and name if present (only in first chunk)
+                    if tool_call_id and tool_call_name:
+                        # Check if we've already emitted ToolCallStartedEvent for this tool call
+                        tool_key = f"{tool_call_id}"
+                        has_started = tool_call_tracker.get("_started", set())
+
+                        if tool_key not in has_started:
+                            # First chunk with id and name - emit ToolCallStartedEvent first
+                            # Create a ToolExecution with empty args (args will come via deltas)
+                            tool_exec = ToolExecution(
+                                tool_call_id=tool_call_id,
+                                tool_name=tool_call_name,
+                            )
+                            yield handle_event(  # type: ignore
+                                create_tool_call_started_event(from_run_response=run_response, tool=tool_exec),
+                                run_response,
+                                events_to_skip=self.events_to_skip,  # type: ignore
+                                store_events=self.store_events,
+                            )
+                            # Mark this tool call as started
+                            has_started.add(tool_key)
+                            tool_call_tracker["_started"] = has_started
+
+                        tool_call_tracker["current"] = {
+                            "id": tool_call_id,
+                            "name": tool_call_name,
+                        }
+
+                    # Use tracked values if current delta doesn't have them
+                    if tool_call_tracker is not None and "current" in tool_call_tracker:
+                        current_tool = tool_call_tracker["current"]
+                        if not tool_call_id:
+                            tool_call_id = current_tool.get("id", "")
+                        if not tool_call_name:
+                            tool_call_name = current_tool.get("name", "")
+
+                    # Accumulate arguments and track completion
+                    tool_key = tool_call_id or "default"
+                    if "_accumulated_args" not in tool_call_tracker:
+                        tool_call_tracker["_accumulated_args"] = {}
+                    accumulated_args = tool_call_tracker["_accumulated_args"]
+                    accumulated_args[tool_key] = (accumulated_args.get(tool_key, "") or "") + delta
+
+                    # Check if we've already emitted ToolCallArgsCompletedEvent
+                    completed_set = tool_call_tracker.get("_args_completed", set())
+
+                    # Emit the delta event
+                    yield handle_event(  # type: ignore
+                        create_tool_call_args_delta_event(
+                            from_run_response=run_response,
+                            tool_call_id=tool_call_id,
+                            tool_call_name=tool_call_name,
+                            delta=delta,
+                        ),
+                        run_response,
+                        events_to_skip=self.events_to_skip,  # type: ignore
+                        store_events=self.store_events,
+                    )
+
+                    # Check if arguments are complete (valid JSON and ends with })
+                    current_accumulated = accumulated_args.get(tool_key, "")
+                    is_complete = False
+                    if current_accumulated:
+                        try:
+                            import json
+
+                            parsed = json.loads(current_accumulated)
+                            if isinstance(parsed, dict):
+                                is_complete = True
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+
+                    # Emit ToolCallArgsCompletedEvent if arguments are complete
+                    if is_complete and tool_key not in completed_set:
+                        completed_set.add(tool_key)
+                        tool_call_tracker["_args_completed"] = completed_set
+
+                        # Parse complete args
+                        import json
+
+                        complete_tool_args = json.loads(current_accumulated)
+
+                        yield handle_event(  # type: ignore
+                            create_tool_call_args_completed_event(
+                                from_run_response=run_response,
+                                tool_call_id=tool_call_id,
+                                tool_call_name=tool_call_name,
+                                tool_args=complete_tool_args,
+                            ),
+                            run_response,
+                            events_to_skip=self.events_to_skip,  # type: ignore
+                            store_events=self.store_events,
+                        )
 
             # If the model response is a tool_call_completed, update the existing tool call in the run_response
             elif model_response_event.event == ModelResponseEvent.tool_call_completed.value:
@@ -6145,7 +6327,7 @@ class Agent:
                                     "reasoning_time_taken"
                                 ] + float(tool_call_metrics.duration)
 
-                        if stream_events:
+                        if stream_events is not None:
                             yield handle_event(  # type: ignore
                                 create_tool_call_completed_event(
                                     from_run_response=run_response, tool=tool_call, content=model_response_event.content
@@ -6164,7 +6346,7 @@ class Agent:
                                     store_events=self.store_events,
                                 )
 
-                if stream_events:
+                if stream_events is not None:
                     if reasoning_step is not None:
                         if reasoning_state and not reasoning_state["reasoning_started"]:
                             yield handle_event(  # type: ignore
@@ -10117,7 +10299,7 @@ class Agent:
         from agno.reasoning.manager import ReasoningEventType
 
         if event.event_type == ReasoningEventType.started:
-            if stream_events:
+            if stream_events is not None:
                 yield handle_event(  # type: ignore
                     create_reasoning_started_event(from_run_response=run_response),
                     run_response,
@@ -10145,7 +10327,7 @@ class Agent:
                     reasoning_steps=[event.reasoning_step],
                     reasoning_agent_messages=[],
                 )
-                if stream_events:
+                if stream_events is not None:
                     updated_reasoning_content = self._format_reasoning_step_content(
                         run_response=run_response,
                         reasoning_step=event.reasoning_step,
@@ -10169,7 +10351,7 @@ class Agent:
                     reasoning_steps=event.reasoning_steps,
                     reasoning_agent_messages=event.reasoning_messages,
                 )
-            if stream_events:
+            if stream_events is not None:
                 yield handle_event(  # type: ignore
                     create_reasoning_completed_event(
                         from_run_response=run_response,
@@ -10357,7 +10539,7 @@ class Agent:
             output_schema = run_context.output_schema if run_context else None
 
             if output_schema is not None:
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(
                         create_parser_model_response_started_event(run_response),
                         run_response,
@@ -10396,7 +10578,7 @@ class Agent:
                 else:
                     log_warning("Unable to parse response with parser model")
 
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(
                         create_parser_model_response_completed_event(run_response),
                         run_response,
@@ -10420,7 +10602,7 @@ class Agent:
             output_schema = run_context.output_schema if run_context else None
 
             if output_schema is not None:
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(
                         create_parser_model_response_started_event(run_response),
                         run_response,
@@ -10461,7 +10643,7 @@ class Agent:
                 else:
                     log_warning("Unable to parse response with parser model")
 
-                if stream_events:
+                if stream_events is not None:
                     yield handle_event(
                         create_parser_model_response_completed_event(run_response),
                         run_response,
@@ -10496,7 +10678,7 @@ class Agent:
         if self.output_model is None:
             return
 
-        if stream_events:
+        if stream_events is not None:
             yield handle_event(
                 create_output_model_response_started_event(run_response),
                 run_response,
@@ -10517,7 +10699,7 @@ class Agent:
                 stream_events=stream_events,
             )
 
-        if stream_events:
+        if stream_events is not None:
             yield handle_event(
                 create_output_model_response_completed_event(run_response),
                 run_response,
@@ -10557,7 +10739,7 @@ class Agent:
         if self.output_model is None:
             return
 
-        if stream_events:
+        if stream_events is not None:
             yield handle_event(
                 create_output_model_response_started_event(run_response),
                 run_response,
@@ -10581,7 +10763,7 @@ class Agent:
             ):
                 yield event
 
-        if stream_events:
+        if stream_events is not None:
             yield handle_event(
                 create_output_model_response_completed_event(run_response),
                 run_response,

@@ -11,7 +11,7 @@ from agno.exceptions import ModelProviderError, ModelRateLimitError
 from agno.models.base import Model
 from agno.models.message import Citations, DocumentCitation, Message, UrlCitation
 from agno.models.metrics import Metrics
-from agno.models.response import ModelResponse
+from agno.models.response import ModelResponse, ModelResponseEvent
 from agno.run.agent import RunOutput
 from agno.tools.function import Function
 from agno.utils.http import get_default_async_client, get_default_sync_client
@@ -998,6 +998,14 @@ class Claude(Model):
                         "function": function_def,
                     }
                 ]
+
+                # Emit tool call args delta event when tool use is complete
+                model_response.tool_call_args_delta = {
+                    "id": tool_use.id,  # type: ignore
+                    "name": tool_name,
+                    "arguments": json.dumps(tool_input) if tool_input else "",
+                }
+                model_response.event = ModelResponseEvent.tool_call_args_delta.value
 
         # Capture citations from the final response and handle structured outputs
         elif isinstance(response, (MessageStopEvent, ParsedBetaMessageStopEvent)):

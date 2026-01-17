@@ -14,6 +14,7 @@ class ModelResponseEvent(str, Enum):
 
     tool_call_paused = "ToolCallPaused"
     tool_call_started = "ToolCallStarted"
+    tool_call_args_delta = "ToolCallArgsDelta"
     tool_call_completed = "ToolCallCompleted"
     assistant_response = "AssistantResponse"
 
@@ -103,6 +104,9 @@ class ModelResponse:
 
     # Model tool calls
     tool_calls: List[Dict[str, Any]] = field(default_factory=list)
+
+    # Tool call arguments delta (for streaming tool call args)
+    tool_call_args_delta: Optional[Dict[str, Any]] = None
 
     # Actual tool executions
     tool_executions: Optional[List[ToolExecution]] = field(default_factory=list)

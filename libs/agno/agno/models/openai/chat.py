@@ -12,7 +12,7 @@ from agno.media import Audio
 from agno.models.base import Model
 from agno.models.message import Message
 from agno.models.metrics import Metrics
-from agno.models.response import ModelResponse
+from agno.models.response import ModelResponse, ModelResponseEvent
 from agno.run.agent import RunOutput
 from agno.run.team import TeamRunOutput
 from agno.utils.http import get_default_async_client, get_default_sync_client
@@ -864,6 +864,40 @@ class OpenAIChat(Model):
                 # Add tool calls
                 if choice_delta.tool_calls is not None:
                     model_response.tool_calls = choice_delta.tool_calls  # type: ignore
+
+                    # Check for tool call args delta (incremental tool call arguments)
+                    for tool_call in choice_delta.tool_calls:  # type: ignore
+                        if hasattr(tool_call, "function") and tool_call.function:
+                            # Build delta info - use available fields
+                            tool_call_id = tool_call.id if tool_call.id else ""
+                            tool_call_name = (
+                                tool_call.function.name if tool_call.function and tool_call.function.name else ""
+                            )
+                            tool_call_args = (
+                                tool_call.function.arguments
+                                if tool_call.function and tool_call.function.arguments
+                                else ""
+                            )
+
+                            # If we have arguments, this is a tool call args delta
+                            if tool_call_args:
+                                model_response.tool_call_args_delta = {
+                                    "id": tool_call_id,
+                                    "name": tool_call_name,
+                                    "arguments": tool_call_args,
+                                }
+                                model_response.event = ModelResponseEvent.tool_call_args_delta.value
+                                break
+                            # If we have id or name but no args, this is the first chunk of a tool call
+                            # Set tool_call_args_delta with empty args to trigger tool_call_started event
+                            elif (tool_call_id or tool_call_name) and not choice_delta.content:
+                                model_response.tool_call_args_delta = {
+                                    "id": tool_call_id,
+                                    "name": tool_call_name,
+                                    "arguments": "",
+                                }
+                                model_response.event = ModelResponseEvent.tool_call_args_delta.value
+                                break
 
                 if hasattr(choice_delta, "reasoning_content") and choice_delta.reasoning_content is not None:
                     model_response.reasoning_content = choice_delta.reasoning_content
