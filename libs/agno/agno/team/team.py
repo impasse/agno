@@ -710,7 +710,9 @@ class Team:
         if self.events_to_skip is None:
             self.events_to_skip = [
                 RunEvent.run_content,
+                RunEvent.tool_call_args_delta,
                 TeamRunEvent.run_content,
+                TeamRunEvent.tool_call_args_delta,
             ]
         self.stream_member_events = stream_member_events
 

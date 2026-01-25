@@ -701,10 +701,10 @@ class Agent:
 
         self.store_events = store_events
         self.role = role
-        # By default, we skip the run response content event
+        # By default, we skip the run response content and tool call args delta events
         self.events_to_skip = events_to_skip
         if self.events_to_skip is None:
-            self.events_to_skip = [RunEvent.run_content]
+            self.events_to_skip = [RunEvent.run_content, RunEvent.tool_call_args_delta]
 
         self.culture_manager = culture_manager
         self.enable_agentic_culture = enable_agentic_culture
